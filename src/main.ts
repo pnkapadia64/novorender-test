@@ -1,23 +1,18 @@
 import { View, getDeviceProfile, createSphereObject } from "@novorender/api";
 import { SceneData, createAPI } from "@novorender/data-js-api";
 import { initUI } from "./ui";
+import fixPointer from "./pointer";
 
-// get canvas reference
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-// Create a simple sphere mesh object.
-const { mesh } = createSphereObject();
 
 async function main(canvas: HTMLCanvasElement) {
+  fixPointer();
   const gpuTier = 2;
   const deviceProfile = getDeviceProfile(gpuTier);
   const baseUrl = new URL("/novorender/api/", location.origin);
   const imports = await View.downloadImports({ baseUrl });
   const view = new View(canvas, deviceProfile, imports);
   view.modifyRenderState({ grid: { enabled: true } });
-  const abortController = new AbortController();
-  setTimeout(() => {
-    abortController.abort();
-  }, 10_000);
 
   const dataApi = createAPI({
     serviceUrl: "https://data.novorender.com/api",
@@ -31,10 +26,12 @@ async function main(canvas: HTMLCanvasElement) {
   // load the scene using URL gotten from `sceneData`
   const config = await view.loadSceneFromURL(new URL(url));
   const { center, radius } = config.boundingSphere;
+  await view.switchCameraController("flight");
   view.activeController.autoFit(center, radius);
-  // initUI(view);
-  await view.run(abortController.signal);
-  view.dispose();
+  initUI(view);
+  await view.run();
+  // view.dispose();
+  console.log("== dispose done");
 }
 
 main(canvas);

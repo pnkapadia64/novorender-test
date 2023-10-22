@@ -1,30 +1,35 @@
 import { FlightController, RenderStateCamera, View } from "@novorender/api";
 
-let position: RenderStateCamera["position"];
-let rotation: RenderStateCamera["rotation"];
-let renderState: RenderStateCamera;
+interface SavedView {
+  [key: string]: {
+    position: RenderStateCamera["position"];
+    rotation: RenderStateCamera["rotation"];
+  };
+}
+
+const savedViews: SavedView = {};
 
 export const initUI = (view: View) => {
-  const btn1 = document.getElementById("btn1") as HTMLButtonElement;
-  const btn2 = document.getElementById("btn2") as HTMLButtonElement;
+  const buttons = document.getElementsByClassName("view-btn");
 
-  btn1.addEventListener("click", () => {
-    console.log("btn click", view.activeController);
-    console.log("...", view.renderState.camera.position);
-    const { camera } = view.renderState;
-    position = camera.position;
-    rotation = camera.rotation;
-    renderState = camera;
-  });
-
-  btn2.addEventListener("click", () => {
-    console.log("btn 222 click", view.activeController);
-    // const flight = new FlightController(btn1);
-    // if (position && rotation) {
-    //   view.activeController.moveTo(position, 1000, rotation);
-    //   //   view.modifyRenderState({
-    //   //     camera: renderState,
-    //   //   });
-    // }
-  });
+  for (let btn of buttons) {
+    btn.addEventListener("click", (e: any) => {
+      console.log("btn click", btn.id, view.activeController);
+      if (e.shiftKey) {
+        console.log("++shift");
+        const { camera } = view.renderState;
+        const savedKey = btn.id;
+        savedViews[savedKey] = {
+          position: camera.position,
+          rotation: camera.rotation,
+        };
+      } else {
+        const saved = savedViews[btn.id];
+        console.log("==getting saved pos = ", saved);
+        if (saved && saved.position) {
+          view.activeController.moveTo(saved.position, 1000, saved.rotation);
+        }
+      }
+    });
+  }
 };
