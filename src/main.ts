@@ -18,20 +18,15 @@ async function main(canvas: HTMLCanvasElement) {
     serviceUrl: "https://data.novorender.com/api",
   });
 
-  // Load scene metadata
-  // Condos scene ID, but can be changed to any public scene ID
   const sceneData = await dataApi.loadScene("95a89d20dd084d9486e383e131242c4c");
-  // Destructure relevant properties into variables
   const { url } = sceneData as SceneData;
-  // load the scene using URL gotten from `sceneData`
   const config = await view.loadSceneFromURL(new URL(url));
   const { center, radius } = config.boundingSphere;
   await view.switchCameraController("flight");
   view.activeController.autoFit(center, radius);
-  initUI(view);
+  initUI(view, sceneData as SceneData);
   await view.run();
   // view.dispose();
-  console.log("== dispose done");
 }
 
 main(canvas);

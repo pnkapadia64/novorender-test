@@ -1,4 +1,10 @@
-import { FlightController, RenderStateCamera, View } from "@novorender/api";
+import {
+  RenderStateCamera,
+  RenderStateHighlightGroups,
+  View,
+  createNeutralHighlight,
+} from "@novorender/api";
+import { type SceneData } from "@novorender/data-js-api";
 
 interface SavedView {
   [key: string]: {
@@ -9,7 +15,7 @@ interface SavedView {
 
 const savedViews: SavedView = {};
 
-export const initUI = (view: View) => {
+const handleViews = (view: View) => {
   const buttons = document.getElementsByClassName("view-btn");
 
   for (let btn of buttons) {
@@ -32,4 +38,54 @@ export const initUI = (view: View) => {
       }
     });
   }
+};
+
+const handleSearch = (view: View, sceneData: SceneData) => {
+  console.log("=def highlight=", view.renderState.highlights);
+  const searchBtn = document.getElementById("search-btn");
+  const input = document.getElementById("search-input");
+
+  searchBtn?.addEventListener("click", async () => {
+    if (input) {
+      const searchText = (input as HTMLInputElement).value;
+
+      const { db } = sceneData;
+      if (db) {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        const iterator = db.search({ searchPattern: searchText }, signal);
+
+        const result: number[] = [];
+        for await (const object of iterator) {
+          result.push(object.id);
+        }
+        console.log("=== result ==", searchText, iterator, result);
+        if (result.length === 0) {
+          // Show everything
+          view.modifyRenderState({
+            highlights: {
+              defaultAction: undefined,
+              groups: [],
+            },
+          });
+          return;
+        }
+
+        // Then we isolate the objects found
+        const renderStateHighlightGroups: RenderStateHighlightGroups = {
+          defaultAction: "hide",
+          groups: [{ action: createNeutralHighlight(), objectIds: result }],
+        };
+
+        // Finally, modify the renderState
+        view.modifyRenderState({ highlights: renderStateHighlightGroups });
+      }
+    }
+  });
+};
+
+export const initUI = (view: View, sceneData: SceneData) => {
+  handleViews(view);
+  handleSearch(view, sceneData);
 };
