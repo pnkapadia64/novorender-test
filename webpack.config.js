@@ -2,18 +2,18 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
-  entry: "./src/main.ts",
+  entry: "./src/main.tsx",
   module: {
     rules: [
       {
-        test: /\.ts?$/,
-        use: "ts-loader",
+        test: /\.tsx?$/,
         exclude: /node_modules/,
+        loader: "ts-loader",
       },
     ],
   },
   resolve: {
-    extensions: [".ts", ".js"],
+    extensions: [".tsx", ".ts", ".js"],
   },
   plugins: [
     new HtmlWebpackPlugin({
