@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import SaveView from "./SaveView";
 import novo from "./NovoInstance";
 import SearchView from "./SearchView";
@@ -13,13 +13,13 @@ const App = () => {
   }, [ref.current]);
 
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ width: "20%" }}>
+    <>
+      <div style={{ position: "absolute", top: 0 }}>
         <SaveView />
         <SearchView />
       </div>
-      <canvas ref={ref} style={{ width: "80%", height: "100%" }}></canvas>
-    </div>
+      <canvas ref={ref} style={{ width: "100vw", height: "100vh" }}></canvas>
+    </>
   );
 };
 

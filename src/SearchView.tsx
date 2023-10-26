@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import {
-  RenderStateCamera,
   RenderStateHighlightGroups,
   View,
   createNeutralHighlight,
@@ -8,6 +7,7 @@ import {
 import { type SceneData } from "@novorender/data-js-api";
 import novo from "./NovoInstance";
 
+const NO_RESULTS_ERR = "No results";
 const filterSearchInView = async (
   searchText: string,
   view: View,
@@ -30,7 +30,7 @@ const filterSearchInView = async (
           groups: [],
         },
       });
-      throw new Error("No results");
+      throw new Error(NO_RESULTS_ERR);
     }
 
     // Then we isolate the objects found
@@ -62,12 +62,14 @@ const SearchView = () => {
         abortCtrl.abort();
       }
       if (view && sceneData) {
-        setAbortCtrl(abortCtrl);
+        setAbortCtrl(controller);
         try {
           showNoResult(false);
           await filterSearchInView(searchText, view, sceneData, signal);
         } catch (e) {
-          showNoResult(true);
+          if (e instanceof Error && e.message === NO_RESULTS_ERR) {
+            showNoResult(true);
+          }
         }
       }
     }
